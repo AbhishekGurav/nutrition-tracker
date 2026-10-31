@@ -1,22 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 
-import { Button } from "~/components/ui/button"
+import { isDateKey, todayKey } from "~/domain/dates"
+import { TodayPage } from "~/features/today/today-page"
 
 export const Route = createFileRoute("/")({
-  component: Home,
+  // ?date=YYYY-MM-DD selects a past day; omitted means today.
+  validateSearch: (search: Record<string, unknown>): { date?: string } =>
+    isDateKey(search.date) ? { date: search.date } : {},
+  component: TodayRoute,
 })
 
-function Home() {
+function TodayRoute() {
+  const { date } = Route.useSearch()
+  const navigate = useNavigate({ from: Route.fullPath })
+  const day = date ?? todayKey()
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Sidebar Toggle</Button>
-        </div>
-      </div>
-    </div>
+    <TodayPage
+      date={day}
+      onDateChange={(next) =>
+        void navigate({ search: next === todayKey() ? {} : { date: next } })
+      }
+    />
   )
 }

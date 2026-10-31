@@ -1,3 +1,5 @@
+"use client"
+
 import type * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
@@ -25,15 +27,16 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
+        // pointer-coarse: sizes keep touch targets near 40–44px on phones/tablets.
         default:
-          "h-7 gap-1 px-2 text-xs/relaxed has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+          "h-7 gap-1 px-2 text-xs/relaxed has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 pointer-coarse:h-10 pointer-coarse:px-3 pointer-coarse:text-sm [&_svg:not([class*='size-'])]:size-3.5",
         xs: "h-5 gap-1 rounded-sm px-2 text-[0.625rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-2.5",
-        sm: "h-6 gap-1 px-2 text-xs/relaxed has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        lg: "h-8 gap-1 px-2.5 text-xs/relaxed has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-4",
-        icon: "size-7 [&_svg:not([class*='size-'])]:size-3.5",
+        sm: "h-6 gap-1 px-2 text-xs/relaxed has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 pointer-coarse:h-9 [&_svg:not([class*='size-'])]:size-3",
+        lg: "h-8 gap-1 px-2.5 text-xs/relaxed has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 pointer-coarse:h-11 pointer-coarse:px-4 pointer-coarse:text-sm [&_svg:not([class*='size-'])]:size-4",
+        icon: "size-7 pointer-coarse:size-10 [&_svg:not([class*='size-'])]:size-3.5 pointer-coarse:[&_svg:not([class*='size-'])]:size-4",
         "icon-xs": "size-5 rounded-sm [&_svg:not([class*='size-'])]:size-2.5",
-        "icon-sm": "size-6 [&_svg:not([class*='size-'])]:size-3",
-        "icon-lg": "size-8 [&_svg:not([class*='size-'])]:size-4",
+        "icon-sm": "size-6 pointer-coarse:size-9 [&_svg:not([class*='size-'])]:size-3 pointer-coarse:[&_svg:not([class*='size-'])]:size-4",
+        "icon-lg": "size-8 pointer-coarse:size-11 [&_svg:not([class*='size-'])]:size-4 pointer-coarse:[&_svg:not([class*='size-'])]:size-5",
       },
     },
     defaultVariants: {
