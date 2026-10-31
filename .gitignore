@@ -2,9 +2,16 @@
 .env*
 node_modules
 
-# React Router
-.react-router
+# TanStack Router (generated route tree)
+app/routeTree.gen.ts
+
+# build output
+dist
 build
 
 # typescript
 *.tsbuildinfo
+
+# Agent skills
+.kiro
+.agents
