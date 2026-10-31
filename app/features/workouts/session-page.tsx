@@ -2,14 +2,29 @@ import * as React from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon, Delete02Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+  ArrowLeft01Icon,
+  Delete02Icon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 
 import type { WorkoutSession } from "~/domain/schemas"
 import { formatDayLabel, formatDuration, formatTimer } from "~/domain/dates"
-import { findSessionPRs, historyBests, lastPerformance, sessionVolume, sessionWorkingSetCount } from "~/domain/strength"
+import {
+  findSessionPRs,
+  historyBests,
+  lastPerformance,
+  sessionVolume,
+  sessionWorkingSetCount,
+} from "~/domain/strength"
 import { formatWeight } from "~/domain/units"
 import { repositories } from "~/data/repositories"
-import { useExercises, useSession, useSessions, useUnits } from "~/hooks/use-data"
+import {
+  useExercises,
+  useSession,
+  useSessions,
+  useUnits,
+} from "~/hooks/use-data"
 import { useNow } from "~/hooks/use-now"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
@@ -72,27 +87,40 @@ function SessionView({ session }: { session: WorkoutSession }) {
   const isLive = session.endedAt === undefined
   const now = useNow(1000, isLive)
 
-  const byId = React.useMemo(() => new Map((exercises ?? []).map((e) => [e.id, e])), [exercises])
+  const byId = React.useMemo(
+    () => new Map((exercises ?? []).map((e) => [e.id, e])),
+    [exercises]
+  )
   // Only sessions before this one count as history (matters when editing old workouts).
   const history = React.useMemo(
-    () => (allSessions ?? []).filter((s) => s.id !== session.id && s.startedAt < session.startedAt),
+    () =>
+      (allSessions ?? []).filter(
+        (s) => s.id !== session.id && s.startedAt < session.startedAt
+      ),
     [allSessions, session.id, session.startedAt]
   )
   const prsByRow = React.useMemo(
     () =>
       new Map(
-        session.exercises.map((row) => [row.id, findSessionPRs(row.sets, historyBests(history, row.exerciseId))])
+        session.exercises.map((row) => [
+          row.id,
+          findSessionPRs(row.sets, historyBests(history, row.exerciseId)),
+        ])
       ),
     [session.exercises, history]
   )
   const prCount = [...prsByRow.values()].filter((m) => m.size > 0).length
-  const doneSets = session.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0)
+  const doneSets = session.exercises.reduce(
+    (n, e) => n + e.sets.filter((s) => s.done).length,
+    0
+  )
 
   const finish = async () => {
     if (doneSets === 0) {
       confirm.ask({
         title: "No sets completed",
-        description: "Tick off at least one set to save this workout, or discard it.",
+        description:
+          "Tick off at least one set to save this workout, or discard it.",
         confirmLabel: "Discard workout",
         onConfirm: async () => {
           await repositories.sessions.remove(session.id)
@@ -103,7 +131,11 @@ function SessionView({ session }: { session: WorkoutSession }) {
     }
     await mutateSession(session.id, () => ({ notes: notes || undefined }))
     await finishSession(session.id)
-    toast.success(prCount ? `Workout saved · ${prCount} PR${prCount === 1 ? "" : "s"}` : "Workout saved")
+    toast.success(
+      prCount
+        ? `Workout saved · ${prCount} PR${prCount === 1 ? "" : "s"}`
+        : "Workout saved"
+    )
     void navigate({ to: "/workouts" })
   }
 
@@ -128,7 +160,12 @@ function SessionView({ session }: { session: WorkoutSession }) {
             : `${formatDayLabel(session.date)} · ${formatDuration((session.endedAt ?? session.startedAt) - session.startedAt)}`
         }
         leading={
-          <ButtonLink to="/workouts" variant="ghost" size="icon" aria-label="Back to workouts">
+          <ButtonLink
+            to="/workouts"
+            variant="ghost"
+            size="icon"
+            aria-label="Back to workouts"
+          >
             <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
           </ButtonLink>
         }
@@ -141,16 +178,31 @@ function SessionView({ session }: { session: WorkoutSession }) {
             ) : null}
             <RowActionsMenu
               label="Workout options"
-              actions={[{ label: isLive ? "Discard workout" : "Delete workout", icon: Delete02Icon, destructive: true, onAction: discard }]}
+              actions={[
+                {
+                  label: isLive ? "Discard workout" : "Delete workout",
+                  icon: Delete02Icon,
+                  destructive: true,
+                  onAction: discard,
+                },
+              ]}
             />
           </>
         }
       />
       <PageBody className={timer.endsAt ? "pb-24" : undefined}>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3 min-[380px]:grid-cols-3">
           <StatCard label="Sets done" value={doneSets} />
-          <StatCard label="Volume" value={formatWeight(sessionVolume(session), weightUnit, 0)} hint={`${sessionWorkingSetCount(session)} working sets`} />
-          <StatCard label="PRs" value={prCount} />
+          <StatCard
+            label="Volume"
+            value={formatWeight(sessionVolume(session), weightUnit, 0)}
+            hint={`${sessionWorkingSetCount(session)} working sets`}
+          />
+          <StatCard
+            className="col-span-2 min-[380px]:col-span-1"
+            label="PRs"
+            value={prCount}
+          />
         </div>
 
         {session.exercises.length === 0 ? (
@@ -159,7 +211,11 @@ function SessionView({ session }: { session: WorkoutSession }) {
             description="Add exercises as you go. Your last weights and reps fill in automatically."
             action={
               <Button onPress={() => setPicking(true)}>
-                <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} data-icon="inline-start" />
+                <HugeiconsIcon
+                  icon={PlusSignIcon}
+                  strokeWidth={2}
+                  data-icon="inline-start"
+                />
                 Add exercise
               </Button>
             }
@@ -176,13 +232,17 @@ function SessionView({ session }: { session: WorkoutSession }) {
                 lastSets={lastPerformance(history, row.exerciseId)}
                 prs={prsByRow.get(row.id) ?? new Map()}
                 unit={weightUnit}
-                onSetChange={(setId, patch) => void updateSet(session.id, row.id, setId, patch)}
+                onSetChange={(setId, patch) =>
+                  void updateSet(session.id, row.id, setId, patch)
+                }
                 onSetDone={(setId, done) => {
                   void updateSet(session.id, row.id, setId, { done })
                   if (done && isLive) timer.start()
                 }}
                 onAddSet={() => void addSet(session.id, row.id)}
-                onRemoveSet={(setId) => void removeSet(session.id, row.id, setId)}
+                onRemoveSet={(setId) =>
+                  void removeSet(session.id, row.id, setId)
+                }
                 onMove={(d) => void moveExercise(session.id, i, d)}
                 onRemove={() =>
                   confirm.ask({
@@ -199,7 +259,11 @@ function SessionView({ session }: { session: WorkoutSession }) {
 
         {session.exercises.length > 0 ? (
           <Button variant="outline" size="lg" onPress={() => setPicking(true)}>
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} data-icon="inline-start" />
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              strokeWidth={2}
+              data-icon="inline-start"
+            />
             Add exercise
           </Button>
         ) : null}
@@ -209,7 +273,11 @@ function SessionView({ session }: { session: WorkoutSession }) {
           multiline
           value={notes}
           onChange={setNotes}
-          onBlur={() => void mutateSession(session.id, () => ({ notes: notes || undefined }))}
+          onBlur={() =>
+            void mutateSession(session.id, () => ({
+              notes: notes || undefined,
+            }))
+          }
           placeholder="How did it feel? Anything to change next time?"
         />
 

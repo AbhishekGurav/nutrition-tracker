@@ -9,16 +9,13 @@ import {
 import type { IconSvgElement } from "@hugeicons/react"
 
 export type NavPath =
-  | "/"
-  | "/food"
-  | "/workouts"
-  | "/supplements"
-  | "/progress"
-  | "/settings"
+  "/" | "/food" | "/workouts" | "/supplements" | "/progress" | "/settings"
 
 export interface NavItem {
   to: NavPath
   label: string
+  /** Optional compact visual label for very narrow phones. */
+  shortLabel?: string
   icon: IconSvgElement
 }
 
@@ -27,7 +24,12 @@ export const primaryNav: readonly NavItem[] = [
   { to: "/", label: "Today", icon: Home01Icon },
   { to: "/food", label: "Food", icon: RiceBowl01Icon },
   { to: "/workouts", label: "Workouts", icon: Dumbbell01Icon },
-  { to: "/supplements", label: "Supplements", icon: Medicine02Icon },
+  {
+    to: "/supplements",
+    label: "Supplements",
+    shortLabel: "Supps",
+    icon: Medicine02Icon,
+  },
   { to: "/progress", label: "Progress", icon: Analytics01Icon },
 ]
 

@@ -11,13 +11,16 @@ describe("BottomNav", () => {
     await renderWithRouter(<BottomNav />)
     const nav = await screen.findByRole("navigation", { name: "Primary" })
     const links = within(nav).getAllByRole("link")
-    expect(links.map((l) => l.textContent)).toEqual([
+    expect(links).toHaveLength(5)
+    for (const label of [
       "Today",
       "Food",
       "Workouts",
       "Supplements",
       "Progress",
-    ])
+    ]) {
+      expect(within(nav).getByRole("link", { name: label })).toBeInTheDocument()
+    }
   })
 
   it("marks the active route, including nested paths", async () => {
@@ -45,6 +48,8 @@ describe("AppShell", () => {
       </AppShell>
     )
     expect(await screen.findByText("Page content")).toBeInTheDocument()
-    expect(screen.getAllByRole("navigation", { name: "Primary" }).length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByRole("navigation", { name: "Primary" }).length
+    ).toBeGreaterThan(0)
   })
 })

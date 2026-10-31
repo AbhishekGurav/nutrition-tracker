@@ -10,10 +10,25 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons"
 
-import { addDays, formatDayLabel, formatDuration, todayKey } from "~/domain/dates"
-import { prCountsBySession, sessionVolume, sessionWorkingSetCount } from "~/domain/strength"
+import {
+  addDays,
+  formatDayLabel,
+  formatDuration,
+  todayKey,
+} from "~/domain/dates"
+import {
+  prCountsBySession,
+  sessionVolume,
+  sessionWorkingSetCount,
+} from "~/domain/strength"
 import { formatWeight } from "~/domain/units"
-import { useActiveSession, useExercises, useSessions, useTemplates, useUnits } from "~/hooks/use-data"
+import {
+  useActiveSession,
+  useExercises,
+  useSessions,
+  useTemplates,
+  useUnits,
+} from "~/hooks/use-data"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { Skeleton } from "~/components/ui/skeleton"
@@ -21,7 +36,10 @@ import { PageBody, PageHeader } from "~/components/layout/page-header"
 import { ButtonLink } from "~/components/shared/button-link"
 import { EmptyState, SectionCard, StatCard } from "~/components/shared/cards"
 import { ListRow, RowList } from "~/components/shared/list-row"
-import { templateSummary, useStartWorkout } from "~/features/workouts/templates-page"
+import {
+  templateSummary,
+  useStartWorkout,
+} from "~/features/workouts/templates-page"
 
 const HISTORY_PAGE = 20
 
@@ -35,9 +53,15 @@ export function WorkoutsPage() {
   const start = useStartWorkout()
   const [shown, setShown] = React.useState(HISTORY_PAGE)
 
-  const names = React.useMemo(() => new Map((exercises ?? []).map((e) => [e.id, e.name])), [exercises])
+  const names = React.useMemo(
+    () => new Map((exercises ?? []).map((e) => [e.id, e.name])),
+    [exercises]
+  )
   const finished = React.useMemo(
-    () => (sessions ?? []).filter((s) => s.endedAt !== undefined).sort((a, b) => b.startedAt - a.startedAt),
+    () =>
+      (sessions ?? [])
+        .filter((s) => s.endedAt !== undefined)
+        .sort((a, b) => b.startedAt - a.startedAt),
     [sessions]
   )
   const prCounts = React.useMemo(() => prCountsBySession(finished), [finished])
@@ -50,7 +74,11 @@ export function WorkoutsPage() {
         title="Workouts"
         actions={
           <Button size="sm" onPress={() => void start()} isDisabled={!!active}>
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} data-icon="inline-start" />
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              strokeWidth={2}
+              data-icon="inline-start"
+            />
             Empty workout
           </Button>
         }
@@ -61,18 +89,43 @@ export function WorkoutsPage() {
             title="Workout in progress"
             description={`${active.name} · started ${new Date(active.startedAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`}
             action={
-              <ButtonLink to="/workouts/$sessionId" params={{ sessionId: active.id }}>
-                <HugeiconsIcon icon={PlayIcon} strokeWidth={2} data-icon="inline-start" />
+              <ButtonLink
+                to="/workouts/$sessionId"
+                params={{ sessionId: active.id }}
+              >
+                <HugeiconsIcon
+                  icon={PlayIcon}
+                  strokeWidth={2}
+                  data-icon="inline-start"
+                />
                 Resume
               </ButtonLink>
             }
           />
         ) : null}
 
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard label="Last 7 days" value={thisWeek.length} hint="Workouts" />
-          <StatCard label="Volume" value={formatWeight(thisWeek.reduce((v, s) => v + sessionVolume(s), 0), weightUnit, 0)} hint="Last 7 days" />
-          <StatCard label="PRs" icon={ChampionIcon} value={thisWeek.reduce((n, s) => n + (prCounts.get(s.id) ?? 0), 0)} hint="Last 7 days" />
+        <div className="grid grid-cols-2 gap-3 min-[380px]:grid-cols-3">
+          <StatCard
+            label="Last 7 days"
+            value={thisWeek.length}
+            hint="Workouts"
+          />
+          <StatCard
+            label="Volume"
+            value={formatWeight(
+              thisWeek.reduce((v, s) => v + sessionVolume(s), 0),
+              weightUnit,
+              0
+            )}
+            hint="Last 7 days"
+          />
+          <StatCard
+            className="col-span-2 min-[380px]:col-span-1"
+            label="PRs"
+            icon={ChampionIcon}
+            value={thisWeek.reduce((n, s) => n + (prCounts.get(s.id) ?? 0), 0)}
+            hint="Last 7 days"
+          />
         </div>
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
@@ -110,23 +163,44 @@ export function WorkoutsPage() {
                         subtitle={templateSummary(t, names)}
                         pressLabel={`Start ${t.name}`}
                         onPress={() => void start(t)}
-                        trailing={<HugeiconsIcon icon={PlayIcon} strokeWidth={2} className="size-4 text-primary" aria-hidden="true" />}
+                        trailing={
+                          <HugeiconsIcon
+                            icon={PlayIcon}
+                            strokeWidth={2}
+                            className="size-4 text-primary"
+                            aria-hidden="true"
+                          />
+                        }
                       />
                     ))}
                 </RowList>
               )}
             </SectionCard>
             <ButtonLink to="/workouts/exercises" variant="outline" size="lg">
-              <HugeiconsIcon icon={Search01Icon} strokeWidth={2} data-icon="inline-start" />
+              <HugeiconsIcon
+                icon={Search01Icon}
+                strokeWidth={2}
+                data-icon="inline-start"
+              />
               Browse exercises
             </ButtonLink>
           </div>
 
-          <SectionCard title="History" description={finished.length ? `${finished.length} workouts` : undefined}>
+          <SectionCard
+            title="History"
+            description={
+              finished.length ? `${finished.length} workouts` : undefined
+            }
+          >
             {sessions === undefined ? (
               <Skeleton className="h-48" />
             ) : finished.length === 0 ? (
-              <EmptyState icon={Dumbbell01Icon} title="No workouts yet" description="Finished workouts show up here with volume and PRs." className="py-4" />
+              <EmptyState
+                icon={Dumbbell01Icon}
+                title="No workouts yet"
+                description="Finished workouts show up here with volume and PRs."
+                className="py-4"
+              />
             ) : (
               <div className="flex flex-col gap-2">
                 <RowList>
@@ -141,18 +215,30 @@ export function WorkoutsPage() {
                         trailing={
                           prs > 0 ? (
                             <Badge>
-                              <HugeiconsIcon icon={ChampionIcon} strokeWidth={2} data-icon="inline-start" />
+                              <HugeiconsIcon
+                                icon={ChampionIcon}
+                                strokeWidth={2}
+                                data-icon="inline-start"
+                              />
                               {prs} PR{prs === 1 ? "" : "s"}
                             </Badge>
                           ) : null
                         }
-                        onPress={() => void navigate({ to: "/workouts/$sessionId", params: { sessionId: s.id } })}
+                        onPress={() =>
+                          void navigate({
+                            to: "/workouts/$sessionId",
+                            params: { sessionId: s.id },
+                          })
+                        }
                       />
                     )
                   })}
                 </RowList>
                 {finished.length > shown ? (
-                  <Button variant="ghost" onPress={() => setShown((n) => n + HISTORY_PAGE)}>
+                  <Button
+                    variant="ghost"
+                    onPress={() => setShown((n) => n + HISTORY_PAGE)}
+                  >
                     Show more
                   </Button>
                 ) : null}

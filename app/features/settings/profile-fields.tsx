@@ -1,4 +1,10 @@
-import { FieldDescription, FieldGroup, FieldLabel, FieldSet, FieldLegend } from "~/components/ui/field"
+import {
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+  FieldLegend,
+} from "~/components/ui/field"
 import { Switch } from "~/components/ui/switch"
 import {
   Select,
@@ -12,18 +18,41 @@ import { ChoiceCards, ChoiceGroup } from "~/components/shared/choice"
 import { DateField } from "~/components/shared/date-field"
 import { NumberField } from "~/components/shared/number-field"
 import { WeightField } from "~/components/shared/weight-field"
-import type { ActivityLevel, BodyCompMethod, BodyGoal, Goal, Sex, UnitSystem } from "~/domain/schemas"
+import type {
+  ActivityLevel,
+  BodyCompMethod,
+  BodyGoal,
+  Goal,
+  Sex,
+  UnitSystem,
+} from "~/domain/schemas"
 import { BODY_COMP_METHODS } from "~/domain/schemas"
-import { ACTIVITY_LABELS, DEFAULT_PROTEIN_PER_KG, DEFAULT_PROTEIN_PER_KG_LEAN, GOAL_LABELS } from "~/domain/tdee"
+import {
+  ACTIVITY_LABELS,
+  DEFAULT_PROTEIN_PER_KG,
+  DEFAULT_PROTEIN_PER_KG_LEAN,
+  GOAL_LABELS,
+} from "~/domain/tdee"
 import { composition, METHOD_LABELS } from "~/domain/body-comp"
 import { addDays, todayKey } from "~/domain/dates"
-import { cmToFeetInches, feetInchesToCm, KG_PER_LB, round, weightUnitFor } from "~/domain/units"
-import { planForProfile, type BodyState, type ProfileDraft } from "~/features/settings/profile-service"
+import {
+  cmToFeetInches,
+  feetInchesToCm,
+  KG_PER_LB,
+  round,
+  weightUnitFor,
+} from "~/domain/units"
+import {
+  planForProfile,
+  type BodyState,
+  type ProfileDraft,
+} from "~/features/settings/profile-service"
 import { GoalPlanSummary } from "~/features/body/goal-plan-summary"
 
 interface FieldsProps {
   draft: ProfileDraft
   onChange: (patch: Partial<ProfileDraft>) => void
+  showUnits?: boolean
 }
 
 export const UNIT_OPTIONS = [
@@ -36,11 +65,13 @@ const SEX_OPTIONS = [
   { value: "female", label: "Female" },
 ] as const satisfies readonly { value: Sex; label: string }[]
 
-const ACTIVITY_OPTIONS = (Object.keys(ACTIVITY_LABELS) as ActivityLevel[]).map((value) => ({
-  value,
-  label: ACTIVITY_LABELS[value].label,
-  hint: ACTIVITY_LABELS[value].hint,
-}))
+const ACTIVITY_OPTIONS = (Object.keys(ACTIVITY_LABELS) as ActivityLevel[]).map(
+  (value) => ({
+    value,
+    label: ACTIVITY_LABELS[value].label,
+    hint: ACTIVITY_LABELS[value].hint,
+  })
+)
 
 const GOAL_OPTIONS = (Object.keys(GOAL_LABELS) as Goal[]).map((value) => ({
   value,
@@ -71,7 +102,9 @@ function HeightField({ draft, onChange }: FieldsProps) {
           aria-label="Feet"
           unit="ft"
           value={feet}
-          onChange={(v) => v !== null && onChange({ heightCm: feetInchesToCm(v, inches) })}
+          onChange={(v) =>
+            v !== null && onChange({ heightCm: feetInchesToCm(v, inches) })
+          }
           min={3}
           max={8}
           decimals={0}
@@ -80,7 +113,9 @@ function HeightField({ draft, onChange }: FieldsProps) {
           aria-label="Inches"
           unit="in"
           value={inches}
-          onChange={(v) => v !== null && onChange({ heightCm: feetInchesToCm(feet, v) })}
+          onChange={(v) =>
+            v !== null && onChange({ heightCm: feetInchesToCm(feet, v) })
+          }
           min={0}
           max={11}
           decimals={0}
@@ -104,13 +139,22 @@ export function UnitsField({ draft, onChange }: FieldsProps) {
   )
 }
 
-export function BodyStatsFields({ draft, onChange }: FieldsProps) {
+export function BodyStatsFields({
+  draft,
+  onChange,
+  showUnits = true,
+}: FieldsProps) {
   return (
     <FieldGroup>
-      <UnitsField draft={draft} onChange={onChange} />
+      {showUnits ? <UnitsField draft={draft} onChange={onChange} /> : null}
       <div className="flex flex-col gap-2">
         <FieldLabel>Sex</FieldLabel>
-        <ChoiceGroup aria-label="Sex" value={draft.sex} onChange={(sex) => onChange({ sex })} options={SEX_OPTIONS} />
+        <ChoiceGroup
+          aria-label="Sex"
+          value={draft.sex}
+          onChange={(sex) => onChange({ sex })}
+          options={SEX_OPTIONS}
+        />
         <FieldDescription>Used only for the energy estimate.</FieldDescription>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -161,14 +205,21 @@ export function ActivityFields({ draft, onChange }: FieldsProps) {
 }
 
 /** Patch for a phase change: protein defaults follow unless the user already customised them. */
-export function phasePatch(draft: ProfileDraft, goal: Goal): Partial<ProfileDraft> {
+export function phasePatch(
+  draft: ProfileDraft,
+  goal: Goal
+): Partial<ProfileDraft> {
   const lean = draft.proteinPerKgLean
   return {
     goal,
     proteinPerKg:
-      draft.proteinPerKg === DEFAULT_PROTEIN_PER_KG[draft.goal] ? DEFAULT_PROTEIN_PER_KG[goal] : draft.proteinPerKg,
+      draft.proteinPerKg === DEFAULT_PROTEIN_PER_KG[draft.goal]
+        ? DEFAULT_PROTEIN_PER_KG[goal]
+        : draft.proteinPerKg,
     proteinPerKgLean:
-      lean === undefined || lean === DEFAULT_PROTEIN_PER_KG_LEAN[draft.goal] ? undefined : lean,
+      lean === undefined || lean === DEFAULT_PROTEIN_PER_KG_LEAN[draft.goal]
+        ? undefined
+        : lean,
   }
 }
 
@@ -180,8 +231,11 @@ interface GoalFieldsProps extends FieldsProps {
 export function GoalFields({ draft, onChange, state }: GoalFieldsProps) {
   const hasBodyFat = state.bodyFatPct !== undefined
   const perLb = round(draft.proteinPerKg * KG_PER_LB, 2)
-  const leanValue = draft.proteinPerKgLean ?? DEFAULT_PROTEIN_PER_KG_LEAN[draft.goal]
-  const leanKg = hasBodyFat ? composition(state.weightKg, state.bodyFatPct!).leanKg : undefined
+  const leanValue =
+    draft.proteinPerKgLean ?? DEFAULT_PROTEIN_PER_KG_LEAN[draft.goal]
+  const leanKg = hasBodyFat
+    ? composition(state.weightKg, state.bodyFatPct!).leanKg
+    : undefined
 
   return (
     <FieldGroup>
@@ -236,7 +290,8 @@ function BodyGoalFields({ draft, onChange, state }: GoalFieldsProps) {
   const goal = draft.bodyGoal
   const plan = planForProfile(draft, state)
   const today = todayKey()
-  const set = (patch: Partial<BodyGoal>) => goal && onChange({ bodyGoal: { ...goal, ...patch } })
+  const set = (patch: Partial<BodyGoal>) =>
+    goal && onChange({ bodyGoal: { ...goal, ...patch } })
 
   return (
     <FieldSet className="gap-3">
@@ -245,12 +300,19 @@ function BodyGoalFields({ draft, onChange, state }: GoalFieldsProps) {
           <FieldLegend variant="label" className="mb-0">
             Body composition goal
           </FieldLegend>
-          <FieldDescription>Set a body fat % and lean mass to aim for. Target weight follows from them.</FieldDescription>
+          <FieldDescription>
+            Set a body fat % and lean mass to aim for. Target weight follows
+            from them.
+          </FieldDescription>
         </div>
         <Switch
           aria-label="Set a body composition goal"
           isSelected={goal !== undefined}
-          onChange={(on) => onChange({ bodyGoal: on ? defaultBodyGoal(draft.sex, state) : undefined })}
+          onChange={(on) =>
+            onChange({
+              bodyGoal: on ? defaultBodyGoal(draft.sex, state) : undefined,
+            })
+          }
         />
       </div>
       {goal ? (
@@ -294,7 +356,8 @@ function BodyGoalFields({ draft, onChange, state }: GoalFieldsProps) {
             />
           ) : (
             <p className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-              Add a body fat reading to see your plan: in Progress → Body, or a smart-scale or tape estimate.
+              Add a body fat reading to see your plan: in Progress → Body, or a
+              smart-scale or tape estimate.
             </p>
           )}
         </>
@@ -309,7 +372,13 @@ export interface BodyFatDraft {
 }
 
 /** Optional current body fat for onboarding. */
-export function InitialBodyFatFields({ value, onChange }: { value: BodyFatDraft; onChange: (v: BodyFatDraft) => void }) {
+export function InitialBodyFatFields({
+  value,
+  onChange,
+}: {
+  value: BodyFatDraft
+  onChange: (v: BodyFatDraft) => void
+}) {
   return (
     <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2">
       <NumberField
@@ -324,12 +393,21 @@ export function InitialBodyFatFields({ value, onChange }: { value: BodyFatDraft;
         placeholder="Skip if unknown"
         description="Makes calorie and protein targets more accurate. You can add it later."
       />
-      <MethodSelect value={value.method} onChange={(method) => onChange({ ...value, method })} />
+      <MethodSelect
+        value={value.method}
+        onChange={(method) => onChange({ ...value, method })}
+      />
     </div>
   )
 }
 
-export function MethodSelect({ value, onChange }: { value: BodyCompMethod; onChange: (m: BodyCompMethod) => void }) {
+export function MethodSelect({
+  value,
+  onChange,
+}: {
+  value: BodyCompMethod
+  onChange: (m: BodyCompMethod) => void
+}) {
   return (
     <Select
       value={value}

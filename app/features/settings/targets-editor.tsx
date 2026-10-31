@@ -5,7 +5,11 @@ import { cn } from "~/lib/utils"
 import type { DayType, MacroKey, Targets } from "~/domain/schemas"
 import { MACRO_KEYS } from "~/domain/schemas"
 import { checkKcal } from "~/domain/macros"
-import { clearOverride, overrideTarget, type CalculatedTargets } from "~/domain/tdee"
+import {
+  clearOverride,
+  overrideTarget,
+  type CalculatedTargets,
+} from "~/domain/tdee"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { FieldDescription, FieldSet, FieldLegend } from "~/components/ui/field"
@@ -20,15 +24,22 @@ interface TargetsEditorProps {
   onChange: (next: TargetValues) => void
 }
 
-const DAY_LABELS: Record<DayType, string> = { training: "Training day", rest: "Rest day" }
+const DAY_LABELS: Record<DayType, string> = {
+  training: "Training day",
+  rest: "Rest day",
+}
 
 /**
  * Two columns of target inputs. Editing a field marks it as custom so
  * recalculation won't overwrite it; the reset button restores the estimate.
  */
-export function TargetsEditor({ value, calculated, onChange }: TargetsEditorProps) {
+export function TargetsEditor({
+  value,
+  calculated,
+  onChange,
+}: TargetsEditorProps) {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       {(["training", "rest"] as const).map((day) => {
         const check = checkKcal(value[day])
         return (
@@ -43,14 +54,21 @@ export function TargetsEditor({ value, calculated, onChange }: TargetsEditorProp
                     className="flex-1"
                     label={
                       <span className="flex items-center gap-2">
-                        <span className={cn("size-2 rounded-full", meta.bg)} aria-hidden="true" />
+                        <span
+                          className={cn("size-2 rounded-full", meta.bg)}
+                          aria-hidden="true"
+                        />
                         {meta.label}
-                        {overridden ? <Badge variant="secondary">Custom</Badge> : null}
+                        {overridden ? (
+                          <Badge variant="secondary">Custom</Badge>
+                        ) : null}
                       </span>
                     }
                     unit={meta.unit}
                     value={value[day][key]}
-                    onChange={(v) => v !== null && onChange(overrideTarget(value, day, key, v))}
+                    onChange={(v) =>
+                      v !== null && onChange(overrideTarget(value, day, key, v))
+                    }
                     increment={key === "kcal" ? 50 : 5}
                     max={key === "kcal" ? 10000 : 1000}
                     decimals={0}
@@ -60,7 +78,9 @@ export function TargetsEditor({ value, calculated, onChange }: TargetsEditorProp
                       variant="ghost"
                       size="icon"
                       aria-label={`Reset ${meta.label.toLowerCase()} to the estimate (${calculated[day][key]})`}
-                      onPress={() => onChange(clearOverride(value, calculated, day, key))}
+                      onPress={() =>
+                        onChange(clearOverride(value, calculated, day, key))
+                      }
                     >
                       <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} />
                     </Button>
@@ -70,7 +90,8 @@ export function TargetsEditor({ value, calculated, onChange }: TargetsEditorProp
             })}
             {check.isMismatch ? (
               <FieldDescription className="text-destructive">
-                Macros add up to {Math.round(check.expected)} kcal, not {value[day].kcal}.
+                Macros add up to {Math.round(check.expected)} kcal, not{" "}
+                {value[day].kcal}.
               </FieldDescription>
             ) : null}
           </FieldSet>

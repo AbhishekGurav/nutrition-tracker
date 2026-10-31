@@ -1,10 +1,8 @@
 import * as React from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
 
 import { cn } from "~/lib/utils"
 import { SidebarTrigger } from "~/components/ui/sidebar"
-import { ButtonLink } from "~/components/shared/button-link"
-import { settingsNav } from "~/components/layout/nav-items"
+import { ProfileMenu } from "~/components/layout/profile-menu"
 import { ThemeToggle } from "~/components/layout/theme-toggle"
 
 interface PageHeaderProps {
@@ -12,23 +10,17 @@ interface PageHeaderProps {
   description?: React.ReactNode
   /** Rendered before the title, e.g. a back link. */
   leading?: React.ReactNode
-  /** Right-aligned actions. */
+  /** Right-aligned page actions, before theme and profile controls. */
   actions?: React.ReactNode
-  /** Hide the mobile settings shortcut (e.g. on the settings page itself). */
-  hideSettings?: boolean
   className?: string
 }
 
-/**
- * Sticky page header. On phones it carries a settings shortcut (settings isn't
- * in the tab bar); from md up it carries the sidebar toggle.
- */
+/** Sticky page header with global theme and profile controls. */
 export function PageHeader({
   title,
   description,
   leading,
   actions,
-  hideSettings,
   className,
 }: PageHeaderProps) {
   return (
@@ -38,7 +30,7 @@ export function PageHeader({
         className
       )}
     >
-      <div className="mx-auto flex min-h-14 w-full max-w-5xl items-center gap-2 px-4">
+      <div className="mx-auto flex min-h-14 w-full max-w-5xl items-center gap-1 px-3 sm:gap-2 sm:px-4">
         <SidebarTrigger className="hidden md:inline-flex" />
         {leading}
         <div className="flex min-w-0 flex-1 flex-col">
@@ -53,27 +45,14 @@ export function PageHeader({
           <div className="flex shrink-0 items-center gap-1">{actions}</div>
         ) : null}
         <ThemeToggle />
-        {hideSettings ? null : (
-          <ButtonLink
-            to={settingsNav.to}
-            variant="ghost"
-            size="icon-lg"
-            aria-label="Settings"
-            className="md:hidden"
-          >
-            <HugeiconsIcon icon={settingsNav.icon} strokeWidth={2} />
-          </ButtonLink>
-        )}
+        <ProfileMenu />
       </div>
     </header>
   )
 }
 
 /** Standard page body container with mobile-first padding. */
-export function PageBody({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function PageBody({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(

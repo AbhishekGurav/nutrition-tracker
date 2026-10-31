@@ -56,7 +56,11 @@ export function ChoiceGroup<T extends string>({
           key={o.value}
           id={o.value}
           aria-label={o.textValue}
-          className={cn(fill && "flex-1", "data-selected:bg-primary data-selected:text-primary-foreground")}
+          className={cn(
+            fill &&
+              "min-w-0 flex-1 text-center leading-tight whitespace-normal",
+            "data-selected:bg-primary data-selected:text-primary-foreground"
+          )}
         >
           {o.label}
         </ToggleGroupItem>
@@ -74,7 +78,13 @@ interface ChoiceCardsProps<T extends string> {
 }
 
 /** Radio cards for options that need a hint line (activity level, goal). */
-export function ChoiceCards<T extends string>({ value, onChange, options, label, className }: ChoiceCardsProps<T>) {
+export function ChoiceCards<T extends string>({
+  value,
+  onChange,
+  options,
+  label,
+  className,
+}: ChoiceCardsProps<T>) {
   return (
     <RadioGroup
       value={value}
@@ -89,7 +99,7 @@ export function ChoiceCards<T extends string>({ value, onChange, options, label,
         <Radio
           key={o.value}
           value={o.value}
-          className="group/choice flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 outline-none transition-colors hover:bg-muted/50 data-focus-visible:ring-2 data-focus-visible:ring-ring/40 data-selected:border-primary data-selected:bg-primary/5 dark:data-selected:bg-primary/10"
+          className="group/choice flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors outline-none hover:bg-muted/50 data-focus-visible:ring-2 data-focus-visible:ring-ring/40 data-selected:border-primary data-selected:bg-primary/5 dark:data-selected:bg-primary/10"
         >
           <span
             aria-hidden="true"
@@ -99,7 +109,9 @@ export function ChoiceCards<T extends string>({ value, onChange, options, label,
           </span>
           <span className="flex min-w-0 flex-col">
             <span className="text-sm font-medium">{o.label}</span>
-            {o.hint ? <span className="text-xs text-muted-foreground">{o.hint}</span> : null}
+            {o.hint ? (
+              <span className="text-xs text-muted-foreground">{o.hint}</span>
+            ) : null}
           </span>
         </Radio>
       ))}

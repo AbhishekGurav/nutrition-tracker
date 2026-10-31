@@ -3,7 +3,7 @@ import type { Table } from "dexie"
 import { BACKUP_TABLES, type AppDB } from "~/data/db"
 import { buildSeedExercises, buildSeedFoods } from "~/data/seed"
 import type { Profile, Targets } from "~/domain/schemas"
-import { BACKUP_FORMAT, backupSchema } from "~/domain/schemas"
+import { BACKUP_FORMAT, backupSchema, profileSchema } from "~/domain/schemas"
 import type { CrudRepo, Entity, Repositories } from "~/data/repositories/types"
 
 export function newId(): string {
@@ -57,12 +57,14 @@ export function createDexieRepositories(db: AppDB): Repositories {
       async save(input) {
         const existing = await db.profile.get(SINGLETON_ID)
         const t = Date.now()
-        const record: Profile = {
+        const record = profileSchema.parse({
           ...input,
+          displayName: input.displayName.trim(),
+          bio: input.bio?.trim() || undefined,
           id: SINGLETON_ID,
           createdAt: existing?.createdAt ?? t,
           updatedAt: t,
-        }
+        })
         await db.profile.put(record)
         return record
       },
@@ -91,13 +93,17 @@ export function createDexieRepositories(db: AppDB): Repositories {
       async remove(id) {
         const food = await db.foods.get(id)
         if (!food) return
-        if (food.source === "seed") throw new Error("Library foods can't be deleted")
+        if (food.source === "seed")
+          throw new Error("Library foods can't be deleted")
         await db.transaction("rw", db.foods, db.meals, async () => {
           await db.foods.delete(id)
           // Variations of a deleted food become standalone foods.
-          await db.foods.where("baseFoodId").equals(id).modify((f) => {
-            delete f.baseFoodId
-          })
+          await db.foods
+            .where("baseFoodId")
+            .equals(id)
+            .modify((f) => {
+              delete f.baseFoodId
+            })
           await db.meals.toCollection().modify((m) => {
             m.items = m.items.filter((i) => i.foodId !== id)
           })
@@ -109,8 +115,10 @@ export function createDexieRepositories(db: AppDB): Repositories {
 
     foodLog: {
       ...foodLogCrud,
-      byDate: (date) => db.foodLog.where("date").equals(date).sortBy("createdAt"),
-      byRange: (start, end) => db.foodLog.where("date").between(start, end, true, true).toArray(),
+      byDate: (date) =>
+        db.foodLog.where("date").equals(date).sortBy("createdAt"),
+      byRange: (start, end) =>
+        db.foodLog.where("date").between(start, end, true, true).toArray(),
       async addMany(inputs) {
         const t = Date.now()
         const records = inputs.map((input, i) => ({
@@ -142,7 +150,8 @@ export function createDexieRepositories(db: AppDB): Repositories {
 
     dayMeta: {
       get: (date) => db.dayMeta.get(date),
-      byRange: (start, end) => db.dayMeta.where("date").between(start, end, true, true).toArray(),
+      byRange: (start, end) =>
+        db.dayMeta.where("date").between(start, end, true, true).toArray(),
       async setDayType(date, dayType) {
         if (dayType === undefined) await db.dayMeta.delete(date)
         else await db.dayMeta.put({ date, dayType, updatedAt: Date.now() })
@@ -154,7 +163,8 @@ export function createDexieRepositories(db: AppDB): Repositories {
       async remove(id) {
         const ex = await db.exercises.get(id)
         if (!ex) return
-        if (ex.source === "seed") throw new Error("Library exercises can't be deleted")
+        if (ex.source === "seed")
+          throw new Error("Library exercises can't be deleted")
         await db.transaction("rw", db.exercises, db.templates, async () => {
           await db.exercises.delete(id)
           await db.templates.toCollection().modify((t) => {
@@ -169,9 +179,12 @@ export function createDexieRepositories(db: AppDB): Repositories {
     sessions: {
       ...sessionCrud,
       byDate: (date) => db.sessions.where("date").equals(date).toArray(),
-      byRange: (start, end) => db.sessions.where("date").between(start, end, true, true).toArray(),
+      byRange: (start, end) =>
+        db.sessions.where("date").between(start, end, true, true).toArray(),
       async active() {
-        const open = await db.sessions.filter((s) => s.endedAt === undefined).toArray()
+        const open = await db.sessions
+          .filter((s) => s.endedAt === undefined)
+          .toArray()
         return open.sort((a, b) => b.startedAt - a.startedAt)[0]
       },
     },
@@ -179,10 +192,15 @@ export function createDexieRepositories(db: AppDB): Repositories {
     supplements: {
       ...supplementCrud,
       async remove(id) {
-        await db.transaction("rw", db.supplements, db.supplementLogs, async () => {
-          await db.supplements.delete(id)
-          await db.supplementLogs.where("supplementId").equals(id).delete()
-        })
+        await db.transaction(
+          "rw",
+          db.supplements,
+          db.supplementLogs,
+          async () => {
+            await db.supplements.delete(id)
+            await db.supplementLogs.where("supplementId").equals(id).delete()
+          }
+        )
       },
     },
 
@@ -190,7 +208,10 @@ export function createDexieRepositories(db: AppDB): Repositories {
       all: () => db.supplementLogs.toArray(),
       byDate: (date) => db.supplementLogs.where("date").equals(date).toArray(),
       byRange: (start, end) =>
-        db.supplementLogs.where("date").between(start, end, true, true).toArray(),
+        db.supplementLogs
+          .where("date")
+          .between(start, end, true, true)
+          .toArray(),
       async setTaken(date, supplementId, taken) {
         const existing = await db.supplementLogs
           .where("[date+supplementId]")
@@ -233,7 +254,10 @@ export function createDexieRepositories(db: AppDB): Repositories {
       all: () => db.bodyComps.orderBy("date").toArray(),
       byDate: (date) => db.bodyComps.where("date").equals(date).toArray(),
       async upsert(date, method, values) {
-        const existing = await db.bodyComps.where("[date+method]").equals([date, method]).first()
+        const existing = await db.bodyComps
+          .where("[date+method]")
+          .equals([date, method])
+          .first()
         const t = Date.now()
         // Replace (not merge) so cleared fields don't linger from the old reading.
         const record = {
@@ -256,12 +280,19 @@ export function createDexieRepositories(db: AppDB): Repositories {
       async exportAll() {
         const data: Record<string, unknown[]> = Object.fromEntries(
           await Promise.all(
-            BACKUP_TABLES.map(async (name) => [name, await db.table(name).toArray()] as const)
+            BACKUP_TABLES.map(
+              async (name) => [name, await db.table(name).toArray()] as const
+            )
           )
         )
         // Library records are restored from the app bundle, so keep backups small.
         const notSeed = (r: unknown) =>
-          !(typeof r === "object" && r !== null && "source" in r && r.source === "seed")
+          !(
+            typeof r === "object" &&
+            r !== null &&
+            "source" in r &&
+            r.source === "seed"
+          )
         data.foods = data.foods.filter(notSeed)
         data.exercises = data.exercises.filter(notSeed)
         return backupSchema.parse({

@@ -5,7 +5,13 @@ import { Delete02Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
 import type { Food, NewEntity, Serving } from "~/domain/schemas"
 import { scaleMacros, toPer100g } from "~/domain/macros"
 import { Button } from "~/components/ui/button"
-import { FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "~/components/ui/field"
+import {
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "~/components/ui/field"
 import { ChoiceGroup } from "~/components/shared/choice"
 import { NumberField } from "~/components/shared/number-field"
 import { TextField } from "~/components/shared/text-field"
@@ -44,12 +50,22 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
   const [name, setName] = React.useState(initial.name)
   const [brand, setBrand] = React.useState(initial.brand ?? "")
   const [basis, setBasis] = React.useState<Basis>("100g")
-  const [servingGrams, setServingGrams] = React.useState<number | null>(initial.servings[0]?.grams ?? null)
-  const [macros, setMacros] = React.useState<MacroDraft>(() =>
-    isMacroDraftEmptyMacros(initial) ? emptyMacroDraft() : toMacroDraft(initial.per100g)
+  const [servingGrams, setServingGrams] = React.useState<number | null>(
+    initial.servings[0]?.grams ?? null
   )
-  const [servings, setServings] = React.useState<ServingDraft[]>(initial.servings.map((s) => ({ ...s })))
-  const [errors, setErrors] = React.useState<{ name?: string; macros?: string; serving?: string }>({})
+  const [macros, setMacros] = React.useState<MacroDraft>(() =>
+    isMacroDraftEmptyMacros(initial)
+      ? emptyMacroDraft()
+      : toMacroDraft(initial.per100g)
+  )
+  const [servings, setServings] = React.useState<ServingDraft[]>(
+    initial.servings.map((s) => ({ ...s }))
+  )
+  const [errors, setErrors] = React.useState<{
+    name?: string
+    macros?: string
+    serving?: string
+  }>({})
 
   // Switching basis converts the numbers so nothing is lost.
   const changeBasis = (next: Basis) => {
@@ -61,7 +77,11 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
     }
     if (grams && !isMacroDraftEmpty(macros)) {
       const m = resolveMacroDraft(macros)
-      setMacros(toMacroDraft(next === "serving" ? scaleMacros(m, grams) : toPer100g(m, grams)))
+      setMacros(
+        toMacroDraft(
+          next === "serving" ? scaleMacros(m, grams) : toPer100g(m, grams)
+        )
+      )
     }
     setServingGrams(grams)
     setBasis(next)
@@ -72,16 +92,27 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
     const next: typeof errors = {}
     if (!name.trim()) next.name = "Give the food a name."
     if (isMacroDraftEmpty(macros)) next.macros = "Enter at least one value."
-    if (basis === "serving" && !servingGrams) next.serving = "Enter the serving size in grams."
+    if (basis === "serving" && !servingGrams)
+      next.serving = "Enter the serving size in grams."
     setErrors(next)
     if (Object.keys(next).length) return
 
     const entered = resolveMacroDraft(macros)
-    const per100g = basis === "serving" && servingGrams ? toPer100g(entered, servingGrams) : entered
+    const per100g =
+      basis === "serving" && servingGrams
+        ? toPer100g(entered, servingGrams)
+        : entered
     const cleanServings: Serving[] = servings
-      .filter((s): s is { label: string; grams: number } => s.label.trim() !== "" && !!s.grams && s.grams > 0)
+      .filter(
+        (s): s is { label: string; grams: number } =>
+          s.label.trim() !== "" && !!s.grams && s.grams > 0
+      )
       .map((s) => ({ label: s.label.trim(), grams: s.grams }))
-    if (basis === "serving" && servingGrams && !cleanServings.some((s) => s.grams === servingGrams)) {
+    if (
+      basis === "serving" &&
+      servingGrams &&
+      !cleanServings.some((s) => s.grams === servingGrams)
+    ) {
       cleanServings.unshift({ label: "1 serving", grams: servingGrams })
     }
     onSubmit({
@@ -99,10 +130,22 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
       <FieldGroup>
         {baseName ? (
           <p className="rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-            Variation of <span className="font-medium text-foreground">{baseName}</span>. Adjust the values to match how you make it.
+            Variation of{" "}
+            <span className="font-medium text-foreground">{baseName}</span>.
+            Adjust the values to match how you make it.
           </p>
         ) : null}
-        <TextField label="Name" value={name} onChange={(v) => (setName(v), setErrors((e) => ({ ...e, name: undefined })))} error={errors.name} autoFocus isRequired />
+        <TextField
+          label="Name"
+          value={name}
+          onChange={(v) => (
+            setName(v),
+            setErrors((e) => ({ ...e, name: undefined }))
+          )}
+          error={errors.name}
+          autoFocus
+          isRequired
+        />
         <TextField label="Brand (optional)" value={brand} onChange={setBrand} />
 
         <div className="flex flex-col gap-2">
@@ -122,7 +165,10 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
             label="Serving size"
             unit="g"
             value={servingGrams}
-            onChange={(v) => (setServingGrams(v), setErrors((e) => ({ ...e, serving: undefined })))}
+            onChange={(v) => (
+              setServingGrams(v),
+              setErrors((e) => ({ ...e, serving: undefined }))
+            )}
             showSteppers={false}
             min={0.1}
             max={5000}
@@ -133,14 +179,18 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
         <MacroSuggestions
           query={`${name} ${brand}`.trim()}
           onPick={(s) => {
-            const grams = basis === "serving" && servingGrams ? servingGrams : 100
+            const grams =
+              basis === "serving" && servingGrams ? servingGrams : 100
             setMacros(toMacroDraft(scaleMacros(s.per100g, grams)))
             setErrors((e) => ({ ...e, macros: undefined }))
           }}
         />
         <MacroInputs
           value={macros}
-          onChange={(m) => (setMacros(m), setErrors((e) => ({ ...e, macros: undefined })))}
+          onChange={(m) => (
+            setMacros(m),
+            setErrors((e) => ({ ...e, macros: undefined }))
+          )}
           basis={basis === "serving" ? "per serving" : "per 100 g"}
         />
         {errors.macros ? (
@@ -151,31 +201,62 @@ export function FoodForm({ id, initial, baseName, onSubmit }: FoodFormProps) {
 
         <FieldSet className="gap-2">
           <FieldLegend variant="label">Servings</FieldLegend>
-          <FieldDescription>Add the portions you use, like “1 scoop” or “1 bowl”, so logging is one tap.</FieldDescription>
+          <FieldDescription>
+            Add the portions you use, like “1 scoop” or “1 bowl”, so logging is
+            one tap.
+          </FieldDescription>
           {servings.map((s, i) => (
-            <div key={i} className="grid grid-cols-[minmax(0,1fr)_7rem_auto] items-end gap-2">
+            <div
+              key={i}
+              className="grid grid-cols-[minmax(0,1fr)_6rem_auto] items-end gap-1.5 min-[360px]:grid-cols-[minmax(0,1fr)_7rem_auto] min-[360px]:gap-2"
+            >
               <TextField
                 label={<span className="sr-only">Serving {i + 1} name</span>}
                 value={s.label}
-                onChange={(label) => setServings((list) => list.map((x, j) => (j === i ? { ...x, label } : x)))}
+                onChange={(label) =>
+                  setServings((list) =>
+                    list.map((x, j) => (j === i ? { ...x, label } : x))
+                  )
+                }
                 placeholder="e.g. 1 scoop"
               />
               <NumberField
                 aria-label={`Serving ${i + 1} grams`}
                 unit="g"
                 value={s.grams}
-                onChange={(grams) => setServings((list) => list.map((x, j) => (j === i ? { ...x, grams } : x)))}
+                onChange={(grams) =>
+                  setServings((list) =>
+                    list.map((x, j) => (j === i ? { ...x, grams } : x))
+                  )
+                }
                 showSteppers={false}
                 min={0.1}
                 max={5000}
               />
-              <Button variant="ghost" size="icon" aria-label={`Remove serving ${i + 1}`} onPress={() => setServings((list) => list.filter((_, j) => j !== i))}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Remove serving ${i + 1}`}
+                onPress={() =>
+                  setServings((list) => list.filter((_, j) => j !== i))
+                }
+              >
                 <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
               </Button>
             </div>
           ))}
-          <Button variant="outline" className="w-fit" onPress={() => setServings((list) => [...list, { label: "", grams: null }])}>
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} data-icon="inline-start" />
+          <Button
+            variant="outline"
+            className="w-fit"
+            onPress={() =>
+              setServings((list) => [...list, { label: "", grams: null }])
+            }
+          >
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              strokeWidth={2}
+              data-icon="inline-start"
+            />
             Add serving
           </Button>
         </FieldSet>
@@ -191,7 +272,12 @@ function isMacroDraftEmptyMacros(d: FoodDraft) {
 
 function roundPer100g(m: Food["per100g"]): Food["per100g"] {
   const r = (n: number) => Math.round(n * 100) / 100
-  return { kcal: r(m.kcal), protein: r(m.protein), carbs: r(m.carbs), fat: r(m.fat) }
+  return {
+    kcal: r(m.kcal),
+    protein: r(m.protein),
+    carbs: r(m.carbs),
+    fat: r(m.fat),
+  }
 }
 
 export const emptyFoodDraft = (name = ""): FoodDraft => ({

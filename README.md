@@ -26,6 +26,11 @@ the device.
   (realistic, ambitious or too fast) and suggests a phase: cut, recomp, maintain or lean bulk.
 - **Progress**: body fat %, lean and fat mass, weight trend (gap-aware EMA), goal
   progress, calories and protein vs target, e1RM per lift, PR list, and weekly hard sets per muscle.
+- **Profile**: one local athlete profile with display name, a resized local photo,
+  training experience and bio. Edit body stats, body-composition goals, appearance
+  and units from the dedicated Profile page; export or erase all profile data there.
+- **Header menu**: the profile photo or initials opens Profile, Settings, data export
+  and the confirmed erase action from any page.
 - **Settings**: target calculator with per-field overrides. It uses Katch-McArdle and
   protein per kg of lean mass when body fat is known, otherwise Mifflin-St Jeor. Also
   kg/lb, light/dark/system theme, and JSON backup export/import.
@@ -54,12 +59,13 @@ app/
   services/     macro suggestion providers
   hooks/        live queries (useLiveQuery over repositories)
   components/   ui/ (shadcn), shared/ (app primitives), layout/ (shell, nav, header)
-  features/     today, food, workouts, supplements, progress, settings, onboarding
+  features/     today, food, workouts, supplements, progress, profile, settings, onboarding
   routes/       thin TanStack Router file routes
 ```
 
 - Weights are stored in **kg** and food in **grams**. Units are converted only at display time.
-- Features talk to `~/data/repositories` only. To add sync, implement the `Repositories`
+- Features talk to `~/data/repositories` only. The current app has one
+  singleton athlete profile. To add sync later, implement the `Repositories`
   interface (`app/data/repositories/types.ts`) against a backend and swap it in
   `app/data/repositories/index.ts`. Every record already has a UUID plus `createdAt`/`updatedAt`.
 - Shared building blocks (`MacroSummary`, `NumberField`, `WeightField`, `QuantityField`,
@@ -94,9 +100,10 @@ server, never in the client bundle.
 
 ## Your data
 
-Everything lives in IndexedDB in this browser. Clearing site data, or uninstalling the
-PWA on some platforms, deletes it. Use **Settings → Export backup** regularly. Backups
-are plain JSON, and the bundled library is restored automatically on import.
+Everything lives in IndexedDB in this browser, including the resized profile
+photo. Clearing site data, or uninstalling the PWA on some platforms, deletes
+it. Use **Profile → Export all data** regularly. Backups are plain JSON, include
+personal profile and health data, and restore the bundled library automatically.
 
 ## Data sources and credits
 

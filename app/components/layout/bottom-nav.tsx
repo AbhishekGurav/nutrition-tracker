@@ -24,14 +24,30 @@ export function BottomNav() {
               <Link
                 to={item.to}
                 aria-current={active ? "page" : undefined}
+                aria-label={item.label}
                 data-active={active || undefined}
                 className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] font-medium text-muted-foreground transition-colors outline-none focus-visible:bg-muted",
+                  "flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-[0.625rem] font-medium text-muted-foreground transition-colors outline-none focus-visible:bg-muted min-[350px]:text-[0.6875rem]",
                   "data-active:text-primary"
                 )}
               >
-                <HugeiconsIcon icon={item.icon} strokeWidth={active ? 2.2 : 1.8} className="size-5" />
-                <span>{item.label}</span>
+                <HugeiconsIcon
+                  icon={item.icon}
+                  strokeWidth={active ? 2.2 : 1.8}
+                  className="size-5"
+                />
+                {item.shortLabel ? (
+                  <>
+                    <span className="max-w-full truncate min-[350px]:hidden">
+                      {item.shortLabel}
+                    </span>
+                    <span className="hidden max-w-full truncate min-[350px]:block">
+                      {item.label}
+                    </span>
+                  </>
+                ) : (
+                  <span className="max-w-full truncate">{item.label}</span>
+                )}
               </Link>
             </li>
           )

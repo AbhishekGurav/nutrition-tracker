@@ -73,16 +73,28 @@ interface StatCardProps {
   className?: string
 }
 
-export function StatCard({ label, value, hint, icon, className }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon,
+  className,
+}: StatCardProps) {
   return (
     <Card size="sm" className={cn("min-w-0", className)}>
       <CardHeader>
         <CardDescription className="flex items-center gap-1.5">
-          {icon ? <HugeiconsIcon icon={icon} strokeWidth={2} className="size-3.5" /> : null}
+          {icon ? (
+            <HugeiconsIcon icon={icon} strokeWidth={2} className="size-3.5" />
+          ) : null}
           {label}
         </CardDescription>
-        <CardTitle className="text-xl font-semibold tabular-nums">{value}</CardTitle>
-        {hint ? <p className="text-[0.6875rem] text-muted-foreground">{hint}</p> : null}
+        <CardTitle className="text-lg leading-tight font-semibold break-words tabular-nums sm:text-xl">
+          {value}
+        </CardTitle>
+        {hint ? (
+          <p className="text-[0.6875rem] text-muted-foreground">{hint}</p>
+        ) : null}
       </CardHeader>
     </Card>
   )
@@ -98,7 +110,13 @@ interface EmptyStateProps {
   className?: string
 }
 
-export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  className,
+}: EmptyStateProps) {
   return (
     <Empty className={cn("border py-8", className)}>
       <EmptyHeader>
@@ -108,7 +126,9 @@ export function EmptyState({ icon, title, description, action, className }: Empt
           </EmptyMedia>
         ) : null}
         <EmptyTitle>{title}</EmptyTitle>
-        {description ? <EmptyDescription>{description}</EmptyDescription> : null}
+        {description ? (
+          <EmptyDescription>{description}</EmptyDescription>
+        ) : null}
       </EmptyHeader>
       {action ? <EmptyContent>{action}</EmptyContent> : null}
     </Empty>
@@ -142,9 +162,19 @@ export function ChartCard({
   className,
 }: ChartCardProps) {
   return (
-    <SectionCard title={title} description={description} action={action} footer={footer} className={className}>
+    <SectionCard
+      title={title}
+      description={description}
+      action={action}
+      footer={footer}
+      className={className}
+    >
       {isEmpty ? (
-        <EmptyState title={emptyTitle} description={emptyDescription} className="border-dashed" />
+        <EmptyState
+          title={emptyTitle}
+          description={emptyDescription}
+          className="border-dashed"
+        />
       ) : (
         children
       )}

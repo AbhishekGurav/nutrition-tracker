@@ -38,6 +38,21 @@ export const activityLevelSchema = z.enum([
   "very_active",
 ])
 export const goalSchema = z.enum(["cut", "recomp", "maintain", "bulk"])
+export const trainingExperienceSchema = z.enum([
+  "beginner",
+  "intermediate",
+  "advanced",
+])
+export type TrainingExperience = z.infer<typeof trainingExperienceSchema>
+
+/** A locally generated JPEG/PNG/WebP data URL. SVG is intentionally excluded. */
+export const avatarDataUrlSchema = z
+  .string()
+  .max(700_000, "Profile photo is too large")
+  .regex(
+    /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/,
+    "Invalid profile photo"
+  )
 
 /** Body-composition goal. Target weight is derived: lean / (1 - bf%). */
 export const bodyGoalSchema = z.object({
@@ -49,6 +64,10 @@ export type BodyGoal = z.infer<typeof bodyGoalSchema>
 
 export const profileSchema = z.object({
   ...base,
+  displayName: z.string().trim().min(1, "Display name is required").max(80),
+  avatarDataUrl: avatarDataUrlSchema.optional(),
+  trainingExperience: trainingExperienceSchema,
+  bio: z.string().trim().max(280).optional(),
   sex: sexSchema,
   birthYear: z.number().int().min(1900).max(2100),
   heightCm: z.number().min(100).max(250),
@@ -283,7 +302,14 @@ export type BodyWeight = z.infer<typeof bodyWeightSchema>
  * How a body-composition reading was taken. Methods disagree by several
  * percentage points, so trends are only drawn within one method.
  */
-export const bodyCompMethodSchema = z.enum(["scale", "dexa", "bia", "calipers", "tape", "other"])
+export const bodyCompMethodSchema = z.enum([
+  "scale",
+  "dexa",
+  "bia",
+  "calipers",
+  "tape",
+  "other",
+])
 export type BodyCompMethod = z.infer<typeof bodyCompMethodSchema>
 export const BODY_COMP_METHODS = bodyCompMethodSchema.options
 

@@ -25,9 +25,8 @@ export interface MetaRecord {
  * IndexedDB schema. Only repositories import this module; UI and hooks go
  * through `~/data/repositories`, so storage can be swapped for a sync backend.
  *
- * Pre-release: the schema is edited in place and existing local data isn't
- * migrated. Once there are real users, add `this.version(n + 1)` with an
- * `.upgrade()` instead of editing.
+ * Pre-release: the schema is edited in place. The current database name
+ * intentionally starts fresh because required profile fields were introduced.
  */
 export class AppDB extends Dexie {
   profile!: Table<Profile, string>
@@ -45,11 +44,9 @@ export class AppDB extends Dexie {
   bodyComps!: Table<BodyComp, string>
   meta!: Table<MetaRecord, string>
 
-  constructor(name = "macro-forge") {
+  constructor(name = "macro-forge-v2") {
     super(name)
-    // Single schema declaration. Numbered 2 only so browsers that already opened
-    // an earlier dev build don't hit a VersionError.
-    this.version(2).stores({
+    this.version(1).stores({
       profile: "id",
       targets: "id",
       foods: "id, name, baseFoodId, source, updatedAt",

@@ -60,14 +60,15 @@ export function SearchList<T>({
   const idle = deferred.trim() === ""
 
   const results = React.useMemo(
-    () => (idle ? [...(idleItems ?? items)] : searchItems(items, deferred, getText)),
+    () =>
+      idle ? [...(idleItems ?? items)] : searchItems(items, deferred, getText),
     [idle, idleItems, items, deferred, getText]
   )
   const shown = results.slice(0, limit)
 
   return (
     <div className={cn("flex min-h-0 flex-col gap-3", className)}>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-stretch gap-2 min-[360px]:flex-row min-[360px]:items-center">
         <SearchField
           value={query}
           onChange={setQuery}
@@ -85,7 +86,11 @@ export function SearchList<T>({
             />
             {query ? (
               <InputGroupAddon align="inline-end">
-                <InputGroupButton size="icon-xs" aria-label="Clear search" onPress={() => setQuery("")}>
+                <InputGroupButton
+                  size="icon-xs"
+                  aria-label="Clear search"
+                  onPress={() => setQuery("")}
+                >
                   <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
                 </InputGroupButton>
               </InputGroupAddon>
@@ -98,15 +103,22 @@ export function SearchList<T>({
       {shown.length > 0 ? (
         <RowList aria-label={`${label} results`}>
           {shown.map((item) => (
-            <React.Fragment key={getKey(item)}>{renderItem(item)}</React.Fragment>
+            <React.Fragment key={getKey(item)}>
+              {renderItem(item)}
+            </React.Fragment>
           ))}
         </RowList>
       ) : !idle ? (
-        (noResults ?? <p className="py-6 text-center text-sm text-muted-foreground">No matches.</p>)
+        (noResults ?? (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            No matches.
+          </p>
+        ))
       ) : null}
       {results.length > shown.length ? (
         <p className="text-center text-xs text-muted-foreground">
-          Showing {shown.length} of {results.length}. Keep typing to narrow it down.
+          Showing {shown.length} of {results.length}. Keep typing to narrow it
+          down.
         </p>
       ) : null}
       <p className="sr-only" aria-live="polite">
